@@ -56,3 +56,53 @@ db.users.updateMany({
 db.users.deleteOne({ name: "홍길동"});
 db.users.deleteMany({ name: "홍길동"});
 ~~~
+
+# Replica 만들기
+~~~bash
+# 터미널 창을 3개 만들고 각각의 창에서 아래와 같이 실행
+mongod --port 15000 --dbpath=c:/mongodb/db1 --replSet replica
+mongod --port 15001 --dbpath=c:/mongodb/db2 --replSet replica
+mongod --port 15002 --dbpath=c:/mongodb/db3 --replSet replica
+
+# 쉘을 열어서
+mongo --port 15000
+config = {
+	_id: "replica",
+	members: [
+		{_id: 0, host:"localhost:15000"},
+		{_id: 1, host:"localhost:15001"},
+		{_id: 2, host:"localhost:15002"}
+	]
+}
+rs.initiate(config)
+~~~
+
+# Sharding
+~~~bash
+mkdir db1 db2 db3 config1 config2
+#db1
+mongod --port 15001 --dbpath=c:/mongodb/db1 --shardsvr
+mongod --port 15002 --dbpath=c:/mongodb/db2 --shardsvr
+mongod --port 15003 --dbpath=c:/mongodb/db3 --shardsvr
+
+mongod --port 25000 --dbpath=c:/mongodb/config1 -- configsvr --replSet reple
+mongod --port 25001 --dbpath=c:/mongodb/config2 -- configsvr --replSet reple
+
+mongo --port 25000
+config = {
+	_id: "reple",
+	members: [
+		{_id: 0, host:"localhost:25000"},
+		{_id: 1, host:"localhost:25001"}
+	]
+}
+rs.initiate(config)
+
+mongos --configdb reple/localhost:25000, localhost:25001 --port 26000
+
+mongo --port 26000
+sh.addShard("localhost:15001");
+sh.addShard("localhost:15002");
+sh.addShard("localhost:15003");
+sh.status() # shard server 상태 보기 
+~~~
