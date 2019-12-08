@@ -1,0 +1,21 @@
+extend layout.pug
+block content
+	div
+		form(method="post" action="/users" id="userForm")
+			input(type="hidden" name="_id" value="")
+			div
+				input(type="text" name="userid" placeholder="아이디")
+			div
+				input(type="text" name="username" placeholder="이름")
+			div
+				button 저장
+	div
+		each item in userLists
+			div(data-id=`${item._id}` style="display: flex;")
+				div(style="padding: 8px;")= item.userid
+				div(style="padding: 8px;")= item.username
+				button(type="button" style="padding: 8px;" onclick=`location.href="/users/rv/${item._id}"`) 삭제
+				button(type="button" style="padding: 8px;" onclick=`userChg('${item._id}')`) 수정
+block script
+	script(src="https://unpkg.com/axios/dist/axios.min.js")
+	script(src="/javascripts/save.js")
